@@ -1,0 +1,8 @@
+En este desafio implemente la libreria react-native-date-picker para poder utilizar en el campo de vencimiento con formato de fechas, a su vez invoca un calendario para mayor facilidad de uso
+
+agregue la imagen del logo de la empresa en el header, 
+
+tambien se puede observar la fuente lato 
+
+en la lista de pedidos use una funcion condicional para que no me llame todos los titulos de cada campos, sino solo de los que estan completos
+ 
