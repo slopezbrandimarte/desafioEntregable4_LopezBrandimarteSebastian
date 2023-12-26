@@ -1,11 +1,11 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import { StyleSheet, Text, TextInput, TouchableOpacity, Modal, FlatList, View} from 'react-native'
 import React from 'react'
 import colores from '../Global/colores'
 import { useState } from 'react'
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import  Icon from 'react-native-vector-icons/EvilIcons';
-import { Picker } from '@react-native-picker/picker';
-import RNPickerSelect from 'react-native-picker-select';
+import DateTimePickerModal from "react-native-modal-datetime-picker"
+import  Icon from 'react-native-vector-icons/EvilIcons'
+
+
 
 
 
@@ -14,32 +14,50 @@ const FormPedidos = ({
   handleInputChange,
   handleAddPedido,
   setModalVisible,
+
 }) => {
   
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [selectedCategoria,setSelectedCategoria] = useState()
+  const [isCategoryModalVisible, setCategoryModalVisible] = useState(false)
+  const [selectedCategoria, setSelectedCategoria] = useState('')
+ 
 
   
   const showDatePicker = () => {
-    setDatePickerVisibility(true);
+    setDatePickerVisibility(true)
   }
   const hideDatePicker = () => {
-    setDatePickerVisibility(false);
+    setDatePickerVisibility(false)
+  }
+
+  const showCategoryModal = () => {
+    setCategoryModalVisible(true)
+  }
+
+  const hideCategoryModal = () => {
+    setCategoryModalVisible(false)
   }
 
   const handleConfirm = (date) => {
     hideDatePicker()
     const fechaFormateada = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
-    handleInputChange('vencimiento', fechaFormateada)
+    handleInputChange('vencimiento',fechaFormateada)
+    handleInputChange('categirua', selectedCategoria)
+  }
+
+  const handleCategorySelection = (category) => {
+    setSelectedCategoria(category);
+    handleInputChange('categoria', category);  // Actualiza newPedido con la categoría seleccionada
+    hideCategoryModal();
   }
   const handleAgregarPedido = () => {
     
 
-    // Llama a la función para agregar el pedido
-    handleAddPedido();
+  
+    handleAddPedido(selectedCategoria);
 
     // Limpia la fecha de vencimiento y oculta el modal
-    handleInputChange('vencimiento', '');
+    handleInputChange('vencimiento', '')
     setModalVisible(false);
   }
   const handleCancelar = () => {
@@ -52,10 +70,10 @@ const FormPedidos = ({
     hideDatePicker()
     setModalVisible(false)
   }
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  
 
   const categoryOptions = [
-    { label: 'Seleccione la categoría', value: '' },
+
     { label: 'Senasa', value: 'Senasa' },
     { label: 'Cancelaciones', value: 'Cancelaciones' },
     { label: 'Post-embarque', value: 'Post-embarque' },
@@ -67,9 +85,13 @@ const FormPedidos = ({
 
     
   return (
-    <View style={styles.container} >
-      <View style={styles.containerMayor} >
-        <View style={styles.formContainer} >
+    <View style={styles.container}>
+      <View style={styles.containerMayor}>
+        <View style={styles.formContainer}>
+
+          <TouchableOpacity onPress={showCategoryModal} style={styles.touchable}>
+            <Text>{newPedido.categoria ? newPedido.categoria : 'Seleccione la categoría'}</Text>
+          </TouchableOpacity>
           
             <TextInput 
               style={styles.input} 
@@ -115,6 +137,32 @@ const FormPedidos = ({
             </TouchableOpacity>
             
             <Icon style={styles.iconClose} name="close-o" size={35} color="black" onPress={handleCancelar} />
+
+            <Modal
+              visible={isCategoryModalVisible}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={hideCategoryModal}
+              
+              >
+              <View style={styles.categoryModalContainer}>
+                <FlatList
+                  data={categoryOptions}
+                  keyExtractor={(item) => item.value}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.categoryModalItem}
+                      onPress={() => {
+                        handleCategorySelection(item.label)
+                        hideCategoryModal()
+                      }}
+                    >
+                      <Text>{item.label}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </Modal>
         </View>
       </View> 
     </View>
@@ -139,12 +187,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff", 
     borderRadius: 10,
     padding: 20,
-    alignItems: "center",
+   /*  alignItems: "center", */
     elevation: 5, // Sombras para Android
     shadowColor: "#000", // Sombras para iOS
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
+  },
+  touchableText: {
+    color: '#333',
+  },
+  categoryTouchable: {
+    height: 40,
+    width: '100%',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingLeft: 10,
+    justifyContent: 'center',
+  },
+  categoryText: {
+    color: '#333',
   },
   input: {
     height: 40,
@@ -162,6 +226,34 @@ const styles = StyleSheet.create({
     right: 10,
   
   },
+  categoryModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    marginTop:15,
+    marginBottom: 'auto'
+    
+  },
+  modalCategories:{
+    justifyContent: 'center',
+    alignContent: 'center',
+    margin:'15'
+  },
+  categoryModalItem: {
+    height: 40,
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingLeft: 10,
+    justifyContent: 'center',
+    
+  },
+  categoryModalItemText: {
+    color: '#333',
+  },
+  
   touchable:{
     height: 40,
     width: 300,
@@ -179,8 +271,6 @@ const styles = StyleSheet.create({
     top: -20,
     right: -20,
   },
-  itemStyle:{
-    color:" black",
-  }
+  
 
 })

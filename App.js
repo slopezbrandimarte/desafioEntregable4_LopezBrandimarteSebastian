@@ -1,5 +1,5 @@
 
-import {  Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {  Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import Header from './src/Components/Header';
 import colores from './src/Global/colores';
 import FormPedidos from './src/Components/FormPedidos';
@@ -17,6 +17,8 @@ const App=()=> {
   const [pedidoSelect, setPedidoSelect] = useState({})
   const [modalVisible, setModalVisible] = useState(false)
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
+  const [verOpciones, setVerOpciones] = useState('all')
+
 
   const [fontsLoaded] = useFonts({
     Lato: require('./assets/Fonts/Lato-Bold.ttf')
@@ -26,15 +28,27 @@ const App=()=> {
 
   const initialPedidoState = {
     id: uuid.v4(),
+    categoria: '',
     exportador: '',
     accion: '',
     identificacion: '',
     buque: '',
     vencimiento: '',
+    completado: false,
   }
+  const handleCheckBoxToggle = (pedidoId) => {
+    setPedido((current) =>
+      current.map((item) =>
+        item.id === pedidoId ? { ...item, completado: !item.completado } : item
+      )
+    )
+  }
+  const pedidosEnCurso = pedido.filter((item) =>!item.completado)
+  const pedidosFinalizados = pedido.filter((item) =>item.completado)
 
 
   const handleInputChange = (field,value) =>{
+    
     setNewPedido((current) => ({...current, [field]: value}))
   } 
 
@@ -51,10 +65,11 @@ const App=()=> {
       timeZone: 'America/Buenos_Aires',
 };
 
-
+    const selectedCategoria = newPedido.categoria
     const fechaSolicitado =date.toLocaleString('es-AR', options)
     const newPedidoConFecha = {
       ...newPedido,
+      categoria: selectedCategoria,
       fechaSolicitado,
     }
     
@@ -70,12 +85,14 @@ const App=()=> {
     setDeleteModalVisible(true)
   }
 
-  const handlerDelete = () => {
+  const handleDelete = () => {
     setPedido(current =>
       current.filter((item) => item.id !== pedidoSelect.id))
     setDeleteModalVisible(false)
   }
-
+ 
+  
+  }
   return (
     <View style={styles.container}>
       <Header style={styles.header}/>
@@ -86,8 +103,22 @@ const App=()=> {
         >
           <Text style={styles.botonAgregarText}>Agregar Pedido</Text>
         </TouchableOpacity>
-        
-      </View>
+        <TouchableOpacity
+        style={styles.optionButton}
+        onPress={()=> setVerOpciones('pendientes')}
+        >
+          <Text style={styles.optionButtonText}>Pendientes</Text>
+
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.optionButton}
+          onPress={()=> setVerOpciones('completadas')}
+        >
+          <Text style={styles.optionButtonText}>Completadas</Text>
+
+        </TouchableOpacity>
+
+        </View>
       <Modal
         animationType='slide'
         transparent
@@ -100,19 +131,26 @@ const App=()=> {
               handleInputChange={handleInputChange}
               handleAddPedido={handleAddPedido}
               setModalVisible={setModalVisible}
+              
             />
           </View>
       </Modal>
       <ListaPedido
-        pedido={pedido}
+        pedido={filteredPedidos()}
         onModal={handleModal}
+        onCheckBoxToggle={handleCheckBoxToggle}
+      />
+      <ListaPedido
+        pedido={pedidosFinalizados}
+        onModal={handleModal}
+        onCheckBoxToggle={handleCheckBoxToggle}
       />
       
       <ModalDelete
       pedido={pedidoSelect}
       visible={deleteModalVisible}
       onModal={()=> setDeleteModalVisible(false)}
-      onDelete={handlerDelete}
+      onDelete={handleDelete}
       />
 
 
